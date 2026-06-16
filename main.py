@@ -9,7 +9,8 @@ try:
     import customtkinter as ctk
 except ImportError as exc:
     raise SystemExit(
-        "customtkinter не установлен. Установите пакет командой: pip install customtkinter"
+        "Не удалось загрузить customtkinter или его зависимость: "
+        f"{exc}. Установите пакет командой: pip install customtkinter"
     ) from exc
 
 
@@ -170,84 +171,91 @@ def ask_sudo_password():
     pwd_window.geometry("420x220")
     pwd_window.resizable(False, False)
     pwd_window.transient(root)
-    pwd_window.grab_set()
     pwd_window.configure(fg_color=APP_BG)
-
-    ctk.CTkLabel(
-        pwd_window,
-        text="Для изменения /etc/environment и системной Java нужны права sudo.",
-        font=("Arial", 15, "bold"),
-        text_color=TEXT_PRIMARY,
-        wraplength=360,
-        justify="center",
-    ).pack(pady=(24, 10), padx=20)
-
-    ctk.CTkLabel(
-        pwd_window,
-        text="Пароль будет использован только для текущего применения.",
-        font=("Arial", 12),
-        text_color=TEXT_SECONDARY,
-    ).pack(pady=(0, 14))
-
+    pwd_window.lift()
+    pwd_window.attributes("-topmost", True)
     pwd_var = tk.StringVar()
-    pwd_entry = ctk.CTkEntry(
-        pwd_window,
-        textvariable=pwd_var,
-        show="*",
-        width=320,
-        height=40,
-        corner_radius=14,
-        fg_color=SURFACE_ALT,
-        border_color=BORDER,
-        text_color=TEXT_PRIMARY,
-    )
-    pwd_entry.pack(pady=(0, 18))
-    pwd_entry.focus_set()
-
     result = {"password": None}
+    widgets = {"entry": None}
 
     def on_ok(event=None):
         result["password"] = pwd_var.get().strip()
-        pwd_window.grab_release()
-        pwd_window.destroy()
+        if pwd_window.winfo_exists():
+            pwd_window.grab_release()
+            pwd_window.destroy()
 
-    def on_cancel():
-        pwd_window.grab_release()
-        pwd_window.destroy()
+    def on_cancel(event=None):
+        if pwd_window.winfo_exists():
+            pwd_window.grab_release()
+            pwd_window.destroy()
 
+    def create_widgets():
+        pwd_window.grid_columnconfigure((0, 1), weight=1)
+
+        ctk.CTkLabel(
+            pwd_window,
+            text="Для изменения /etc/environment и системной Java нужны права sudo.",
+            font=("Arial", 15, "bold"),
+            text_color=TEXT_PRIMARY,
+            wraplength=360,
+            justify="center",
+        ).grid(row=0, column=0, columnspan=2, padx=20, pady=(24, 10), sticky="ew")
+
+        ctk.CTkLabel(
+            pwd_window,
+            text="Пароль будет использован только для текущего применения.",
+            font=("Arial", 12),
+            text_color=TEXT_SECONDARY,
+        ).grid(row=1, column=0, columnspan=2, padx=20, pady=(0, 14), sticky="ew")
+
+        pwd_entry = ctk.CTkEntry(
+            pwd_window,
+            textvariable=pwd_var,
+            show="*",
+            width=320,
+            height=40,
+            corner_radius=14,
+            fg_color=SURFACE_ALT,
+            border_color=BORDER,
+            text_color=TEXT_PRIMARY,
+        )
+        pwd_entry.grid(row=2, column=0, columnspan=2, padx=20, pady=(0, 18), sticky="ew")
+        pwd_entry.bind("<Return>", on_ok)
+        pwd_entry.bind("<KP_Enter>", on_ok)
+        widgets["entry"] = pwd_entry
+
+        ctk.CTkButton(
+            pwd_window,
+            text="Отмена",
+            height=38,
+            corner_radius=14,
+            fg_color=SURFACE_ALT,
+            hover_color=CARD_HOVER,
+            border_width=1,
+            border_color=BORDER,
+            command=on_cancel,
+        ).grid(row=3, column=0, padx=(20, 10), pady=(0, 20), sticky="ew")
+
+        ctk.CTkButton(
+            pwd_window,
+            text="Применить",
+            height=38,
+            corner_radius=14,
+            fg_color=CARD_ACTIVE,
+            hover_color="#2b79b7",
+            command=on_ok,
+        ).grid(row=3, column=1, padx=(10, 20), pady=(0, 20), sticky="ew")
+
+        pwd_window.after(120, lambda: widgets["entry"] and widgets["entry"].focus_set())
+        pwd_window.after(180, lambda: pwd_window.attributes("-topmost", False))
+
+    pwd_window.protocol("WM_DELETE_WINDOW", on_cancel)
     pwd_window.bind("<Return>", on_ok)
     pwd_window.bind("<KP_Enter>", on_ok)
-    pwd_entry.bind("<Return>", on_ok)
-    pwd_entry.bind("<KP_Enter>", on_ok)
-
-    buttons = ctk.CTkFrame(pwd_window, fg_color="transparent")
-    buttons.pack()
-
-    ctk.CTkButton(
-        buttons,
-        text="Отмена",
-        width=120,
-        height=38,
-        corner_radius=14,
-        fg_color=SURFACE_ALT,
-        hover_color=CARD_HOVER,
-        border_width=1,
-        border_color=BORDER,
-        command=on_cancel,
-    ).pack(side="left", padx=6)
-
-    ctk.CTkButton(
-        buttons,
-        text="Применить",
-        width=120,
-        height=38,
-        corner_radius=14,
-        fg_color=CARD_ACTIVE,
-        hover_color="#2b79b7",
-        command=on_ok,
-    ).pack(side="left", padx=6)
-
-    pwd_window.wait_window()
+    pwd_window.after(10, create_widgets)
+    pwd_window.after(20, pwd_window.deiconify)
+    pwd_window.grab_set()
+    root.wait_window(pwd_window)
     return result["password"] or None
 
 

@@ -15,7 +15,7 @@ python -m pip install --upgrade pip
 if [[ -f requirements.txt ]]; then
     python -m pip install -r requirements.txt
 fi
-python -m pip install pyinstaller pillow
+python -m pip install pyinstaller pillow customtkinter darkdetect packaging
 python scripts/generate_icons.py
 
 python -m PyInstaller JavaSwitchManager.spec     --noconfirm     --clean
