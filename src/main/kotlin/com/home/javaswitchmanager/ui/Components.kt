@@ -40,51 +40,58 @@ fun JavaCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val versionDetails = buildString {
+        append("Version ${installation.version}")
+        installation.architecture
+            ?.takeIf { it.isNotBlank() }
+            ?.let {
+                append(" • ")
+                append(it)
+            }
+    }
+
     Card(
         modifier = modifier.clickable(onClick = onClick),
         backgroundColor = if (selected) AppColors.CardSelected else AppColors.Card,
         border = BorderStroke(1.dp, if (selected) AppColors.Accent else AppColors.Border),
-        shape = RoundedCornerShape(18.dp),
-        elevation = if (selected) 8.dp else 1.dp,
+        shape = RoundedCornerShape(16.dp),
+        elevation = if (selected) 6.dp else 1.dp,
     ) {
-        Column(Modifier.padding(16.dp)) {
+        Column(Modifier.padding(horizontal = 12.dp, vertical = 10.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
                     Modifier
-                        .size(12.dp)
+                        .size(10.dp)
                         .clip(CircleShape)
                         .background(if (active) AppColors.Success else AppColors.Border),
                 )
-                Spacer(Modifier.width(8.dp))
+                Spacer(Modifier.width(6.dp))
                 Text(
                     installation.displayName,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 17.sp,
+                    fontSize = 16.sp,
                     color = AppColors.TextPrimary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
             }
-            Spacer(Modifier.height(7.dp))
+            Spacer(Modifier.height(4.dp))
             Text(
-                "Version ${installation.version}",
+                versionDetails,
                 color = AppColors.TextSecondary,
                 fontSize = 12.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            if (!installation.architecture.isNullOrBlank()) {
-                Text(installation.architecture, color = AppColors.TextSecondary, fontSize = 12.sp)
-            }
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(5.dp))
             Text(
                 installation.home.toString(),
                 color = if (selected) Color(0xFFCAEFFF) else AppColors.TextSecondary,
                 fontSize = 11.sp,
-                maxLines = 2,
+                maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            Spacer(Modifier.height(6.dp))
+            Spacer(Modifier.height(4.dp))
             Text("Найдено: ${installation.source.label}", color = AppColors.TextSecondary, fontSize = 10.sp)
         }
     }
