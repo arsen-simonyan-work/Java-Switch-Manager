@@ -46,6 +46,7 @@ import com.home.javaswitchmanager.AppController
 import com.home.javaswitchmanager.domain.ApplyResult
 import com.home.javaswitchmanager.domain.AppSnapshot
 import com.home.javaswitchmanager.domain.EnvironmentAspect
+import com.home.javaswitchmanager.domain.EnvironmentAspectId
 import com.home.javaswitchmanager.domain.JavaInstallation
 import com.home.javaswitchmanager.domain.OperationOutcome
 import com.home.javaswitchmanager.domain.PathNormalization
@@ -69,7 +70,12 @@ fun MainScreen(controller: AppController, settings: AppSettings) {
     val operationMutex = remember { Mutex() }
 
     fun activeJavaHome(snapshot: AppSnapshot): String? =
-        snapshot.environment.aspects.firstOrNull { it.id.name.contains("PATH") && it.resolvedHome != null }?.resolvedHome
+        snapshot.environment.aspects.firstOrNull {
+            it.id == EnvironmentAspectId.SYSTEM_JAVA && it.resolvedHome != null
+        }?.resolvedHome
+            ?: snapshot.environment.aspects.firstOrNull {
+                it.id == EnvironmentAspectId.PATH_JAVA && it.resolvedHome != null
+            }?.resolvedHome
             ?: snapshot.environment.aspects.firstOrNull { it.resolvedHome != null }?.resolvedHome
 
     fun chooseDefaults(newSnapshot: AppSnapshot, previousSelection: JavaInstallation?) {
