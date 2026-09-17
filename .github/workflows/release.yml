@@ -46,12 +46,15 @@ jobs:
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y fakeroot
 
-      - name: Verify WiX
+      - name: Add WiX to PATH
         if: runner.os == 'Windows'
         shell: powershell
         run: |
-          Get-Command candle.exe -ErrorAction Stop
-          Get-Command light.exe -ErrorAction Stop
+          $wixBin = "C:\Program Files (x86)\WiX Toolset v3.14\bin"
+          if (-not (Test-Path "$wixBin\candle.exe") -or -not (Test-Path "$wixBin\light.exe")) {
+            throw "WiX Toolset 3.14 was not found at $wixBin"
+          }
+          $wixBin | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name: Read application version
         shell: bash
