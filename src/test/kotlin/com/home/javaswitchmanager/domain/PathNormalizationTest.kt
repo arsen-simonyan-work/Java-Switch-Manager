@@ -1,7 +1,6 @@
 package com.home.javaswitchmanager.domain
 
 import kotlin.test.Test
-import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -15,8 +14,9 @@ class PathNormalizationTest {
 
     @Test
     fun trickyMacOsJdkPath() {
-        val path = "/Library/Java/JavaVirtualMachines/temurin-21.jdk/Contents/Home"
-        assertEquals(path, PathNormalization.canonicalKey(path, caseInsensitive = false))
+        val left = "/Library/Java/JavaVirtualMachines/temurin-21.jdk/Contents/Home"
+        val right = "/Library/Java/JavaVirtualMachines/temurin-21.jdk/Contents/Home/"
+        assertTrue(PathNormalization.samePath(left, right, caseInsensitive = false))
     }
 
     @Test
