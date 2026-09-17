@@ -123,42 +123,69 @@ fun MainScreen(controller: AppController, settings: AppSettings) {
     }
 
     Surface(color = AppColors.Background, modifier = Modifier.fillMaxSize()) {
-        Column(Modifier.fillMaxSize().padding(18.dp)) {
-            RefreshFab(isLoading, isApplying, onRefresh = ::refresh)
-            Spacer(Modifier.height(10.dp))
-
-            if (error != null) {
-                StatusBanner(error!!, AppColors.Error)
-                Spacer(Modifier.height(10.dp))
-            }
-            if (result != null) {
-                ApplyResultBanner(result!!)
-                Spacer(Modifier.height(10.dp))
-            }
-
-            if (isLoading && snapshot == null) {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = AppColors.Accent)
+        Box(Modifier.fillMaxSize()) {
+            Column(Modifier.fillMaxSize().padding(18.dp)) {
+                if (error != null) {
+                    StatusBanner(error!!, AppColors.Error)
+                    Spacer(Modifier.height(10.dp))
                 }
-            } else {
-                val current = snapshot
-                if (current != null) {
-                    BoxWithConstraints(Modifier.fillMaxSize()) {
-                        val wide = maxWidth >= 900.dp
-                        if (wide) {
-                            Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-                                JdkPane(
-                                    current,
-                                    selected,
-                                    activeHome = activeJavaHome(current),
-                                    onSelect = { selected = it },
-                                    modifier = Modifier.weight(1.4f).fillMaxHeight(),
-                                )
-                                Column(
-                                    modifier = Modifier.weight(1f).fillMaxHeight(),
-                                    verticalArrangement = Arrangement.spacedBy(14.dp),
-                                ) {
+                if (result != null) {
+                    ApplyResultBanner(result!!)
+                    Spacer(Modifier.height(10.dp))
+                }
+
+                if (isLoading && snapshot == null) {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = AppColors.Accent)
+                    }
+                } else {
+                    val current = snapshot
+                    if (current != null) {
+                        BoxWithConstraints(Modifier.fillMaxSize()) {
+                            val wide = maxWidth >= 900.dp
+                            if (wide) {
+                                Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                                    JdkPane(
+                                        current,
+                                        selected,
+                                        activeHome = activeJavaHome(current),
+                                        onSelect = { selected = it },
+                                        modifier = Modifier.weight(1.4f).fillMaxHeight(),
+                                    )
+                                    Column(
+                                        modifier = Modifier.weight(1f).fillMaxHeight(),
+                                        verticalArrangement = Arrangement.spacedBy(14.dp),
+                                    ) {
+                                        EnvironmentPane(current, Modifier.fillMaxWidth())
+                                        OptionsPane(
+                                            current,
+                                            selected,
+                                            selectedTargets,
+                                            isApplying,
+                                            onTargetToggle = { id, checked ->
+                                                selectedTargets = if (checked) selectedTargets + id else selectedTargets - id
+                                                settings.saveSelectedTargets(controller.platformKey, selectedTargets)
+                                            },
+                                            onApply = {
+                                                selected?.let { java ->
+                                                    scope.launch {
+                                                        val plan = controller.buildPlan(java, selectedTargets)
+                                                        if (plan.operations.isEmpty()) {
+                                                            result = ApplyResult(false, "Выберите хотя бы одну область применения.")
+                                                        } else {
+                                                            confirmPlan = plan
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            modifier = Modifier.weight(1.2f).fillMaxWidth(),
+                                        )
+                                    }
+                                }
+                            } else {
+                                Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(14.dp)) {
                                     EnvironmentPane(current, Modifier.fillMaxWidth())
+                                    JdkPane(current, selected, activeJavaHome(current), { selected = it }, Modifier.weight(1f).fillMaxWidth())
                                     OptionsPane(
                                         current,
                                         selected,
@@ -172,47 +199,26 @@ fun MainScreen(controller: AppController, settings: AppSettings) {
                                             selected?.let { java ->
                                                 scope.launch {
                                                     val plan = controller.buildPlan(java, selectedTargets)
-                                                    if (plan.operations.isEmpty()) {
-                                                        result = ApplyResult(false, "Выберите хотя бы одну область применения.")
-                                                    } else {
-                                                        confirmPlan = plan
-                                                    }
+                                                    if (plan.operations.isEmpty()) result = ApplyResult(false, "Выберите хотя бы одну область применения.")
+                                                    else confirmPlan = plan
                                                 }
                                             }
                                         },
-                                        modifier = Modifier.weight(1.2f).fillMaxWidth(),
+                                        modifier = Modifier.weight(1f).fillMaxWidth(),
                                     )
                                 }
-                            }
-                        } else {
-                            Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                                EnvironmentPane(current, Modifier.fillMaxWidth())
-                                JdkPane(current, selected, activeJavaHome(current), { selected = it }, Modifier.weight(1f).fillMaxWidth())
-                                OptionsPane(
-                                    current,
-                                    selected,
-                                    selectedTargets,
-                                    isApplying,
-                                    onTargetToggle = { id, checked ->
-                                        selectedTargets = if (checked) selectedTargets + id else selectedTargets - id
-                                        settings.saveSelectedTargets(controller.platformKey, selectedTargets)
-                                    },
-                                    onApply = {
-                                        selected?.let { java ->
-                                            scope.launch {
-                                                val plan = controller.buildPlan(java, selectedTargets)
-                                                if (plan.operations.isEmpty()) result = ApplyResult(false, "Выберите хотя бы одну область применения.")
-                                                else confirmPlan = plan
-                                            }
-                                        }
-                                    },
-                                    modifier = Modifier.weight(1f).fillMaxWidth(),
-                                )
                             }
                         }
                     }
                 }
             }
+
+            RefreshFab(
+                loading = isLoading,
+                applying = isApplying,
+                onRefresh = ::refresh,
+                modifier = Modifier.align(Alignment.TopEnd).padding(top = 8.dp, end = 8.dp),
+            )
         }
     }
 
@@ -251,24 +257,27 @@ fun MainScreen(controller: AppController, settings: AppSettings) {
 }
 
 @Composable
-private fun RefreshFab(loading: Boolean, applying: Boolean, onRefresh: () -> Unit) {
+private fun RefreshFab(
+    loading: Boolean,
+    applying: Boolean,
+    onRefresh: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val enabled = !loading && !applying
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-        FloatingActionButton(
-            onClick = { if (enabled) onRefresh() },
-            modifier = Modifier.size(48.dp),
-            backgroundColor = if (enabled) AppColors.AccentStrong else AppColors.Border,
-            contentColor = Color.White,
-        ) {
-            if (loading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(20.dp),
-                    color = Color.White,
-                    strokeWidth = 2.dp,
-                )
-            } else {
-                Text("↻", fontSize = 24.sp, fontWeight = FontWeight.Bold)
-            }
+    FloatingActionButton(
+        onClick = { if (enabled) onRefresh() },
+        modifier = modifier.size(48.dp),
+        backgroundColor = if (enabled) AppColors.AccentStrong else AppColors.Border,
+        contentColor = Color.White,
+    ) {
+        if (loading) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(20.dp),
+                color = Color.White,
+                strokeWidth = 2.dp,
+            )
+        } else {
+            Text("↻", fontSize = 24.sp, fontWeight = FontWeight.Bold)
         }
     }
 }
