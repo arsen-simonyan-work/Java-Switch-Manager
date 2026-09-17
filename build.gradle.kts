@@ -17,6 +17,12 @@ kotlin {
     }
 }
 
+tasks.processResources {
+    from("VERSION") {
+        rename { "app-version.txt" }
+    }
+}
+
 dependencies {
     implementation(compose.desktop.currentOs)
     implementation(compose.material)
