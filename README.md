@@ -5,25 +5,25 @@ The UI and domain logic are shared, while Java discovery and switching behavior 
 
 ## Supported systems
 
-- Windows 10/11 x64 or arm64
+- Windows 10/11 x64
 - macOS 13+ on Apple Silicon
-- Linux desktop distributions compatible with Ubuntu 20.04+ runtime requirements
+- Linux x64 desktop distributions compatible with Ubuntu 20.04+ runtime requirements
 
 ## What it does
 
 ### Linux
-- Discovers JDK/JRE installations from `update-alternatives`, `PATH`, common JDK folders, SDKMAN and jEnv locations.
+- Discovers system-registered Java installations through `update-alternatives`.
 - Can manage `~/.bashrc` and `~/.profile` through an idempotent Java Switch Manager block.
 - Can update `/etc/environment` and `update-alternatives` using the system PolicyKit prompt (`pkexec`).
 - Does not collect or pass a sudo password itself.
 
 ### macOS
-- Discovers JDKs through `/usr/libexec/java_home -V`, standard JavaVirtualMachines folders, Homebrew locations and SDKMAN.
+- Discovers system-registered JDKs through `/usr/libexec/java_home`.
 - Can manage `~/.zshrc` and `~/.zprofile`.
 - Never attempts to replace `/usr/bin/java`.
 
 ### Windows
-- Discovers JDKs from `JAVA_HOME`, `where java`, JavaSoft registry keys and common vendor/install locations.
+- Discovers system-registered JDKs from JavaSoft registry keys.
 - Can set user `JAVA_HOME` and user `Path` without elevation. Windows composes the effective Path from system and user scopes, so an earlier Java entry in the system Path can still win; in that case use the System Path option with UAC.
 - Can set machine `JAVA_HOME` and machine `Path` through a normal Windows UAC prompt.
 - Path switching prepends the selected JDK and removes only Java-bin entries that can be identified safely.
@@ -66,7 +66,13 @@ Build the native installer for the current operating system:
 ./gradlew packageDistributionForCurrentOS
 ```
 
-Native packages must be built on their target OS. GitHub Actions contains a Windows/macOS/Linux build matrix.
+Native packages must be built on their target OS. GitHub Actions contains a Windows/macOS/Linux build matrix and produces:
+
+- Windows x64: `.exe`
+- Linux x64: `.deb`
+- macOS Apple Silicon: `.dmg`
+
+See [`docs/PACKAGING.md`](docs/PACKAGING.md) for release/tag details and signing notes.
 
 ## Architecture
 
@@ -74,4 +80,4 @@ See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). The final implementation rev
 
 ## Version
 
-The application version is stored in `VERSION` and is also used by native packaging.
+The application version is stored in `VERSION` and is also used by the window title and native packaging.
