@@ -115,7 +115,7 @@ class LinuxJavaManager(
             SwitchTargetState(
                 id = BASHRC,
                 title = "Shell · ~/.bashrc",
-                description = "JAVA_HOME и приоритет выбранного JDK/bin для интерактивного Bash.",
+                description = "JAVA_HOME и PATH для Bash.",
                 currentValue = ConfigFiles.readShellJavaHome(bashrc),
                 requiresElevation = false,
                 defaultSelected = true,
@@ -123,7 +123,7 @@ class LinuxJavaManager(
             SwitchTargetState(
                 id = PROFILE,
                 title = "Login shell · ~/.profile",
-                description = "JAVA_HOME и PATH для login-сессий.",
+                description = "JAVA_HOME и PATH для login shell.",
                 currentValue = ConfigFiles.readShellJavaHome(profile),
                 requiresElevation = false,
                 defaultSelected = true,
@@ -131,7 +131,7 @@ class LinuxJavaManager(
             SwitchTargetState(
                 id = ENVIRONMENT,
                 title = "System · /etc/environment",
-                description = "Системный JAVA_HOME. Требует PolicyKit-подтверждение.",
+                description = "Системный JAVA_HOME.",
                 currentValue = ConfigFiles.readEnvironmentJavaHome(Path.of("/etc/environment")),
                 requiresElevation = true,
                 defaultSelected = false,
@@ -139,7 +139,7 @@ class LinuxJavaManager(
             SwitchTargetState(
                 id = ALTERNATIVES,
                 title = "System · update-alternatives",
-                description = "Переключает системный /usr/bin/java на выбранную установку.",
+                description = "Системная Java (/usr/bin/java).",
                 currentValue = currentAlternativeHome(),
                 requiresElevation = true,
                 defaultSelected = false,
