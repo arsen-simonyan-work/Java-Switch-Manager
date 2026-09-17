@@ -16,7 +16,11 @@ class DiscoverySupport(
         if (path == null) {
             return
         }
-        candidates.putIfAbsent(path.toAbsolutePath().normalize(), source)
+        val normalized = path.toAbsolutePath().normalize()
+        val previous = candidates[normalized]
+        if (previous == null || (!previous.systemRegistered && source.systemRegistered)) {
+            candidates[normalized] = source
+        }
     }
 
     fun addText(path: String?, source: JavaInstallationSource) {
