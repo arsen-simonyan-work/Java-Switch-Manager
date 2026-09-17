@@ -58,7 +58,11 @@ class DiscoverySupport(
             val installation = inspector.inspect(candidate, source) ?: continue
             val key = normalizedKey(installation.home)
             val previous = unique[key]
-            if (previous == null || (!previous.isJdk && installation.isJdk)) {
+            val shouldReplace = previous == null ||
+                (!previous.source.systemRegistered && installation.source.systemRegistered) ||
+                (previous.source.systemRegistered == installation.source.systemRegistered &&
+                    !previous.isJdk && installation.isJdk)
+            if (shouldReplace) {
                 unique[key] = installation
             }
         }
