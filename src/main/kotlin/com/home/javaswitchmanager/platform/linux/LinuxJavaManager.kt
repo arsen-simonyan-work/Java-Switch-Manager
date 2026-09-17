@@ -60,35 +60,41 @@ class LinuxJavaManager(
     override fun readEnvironment(): EnvironmentSnapshot {
         val installations = discoverInstallations()
         val processJavaHome = System.getenv("JAVA_HOME")
-        val activeCommand = commandRunner.run(listOf("sh", "-lc", "command -v java"), timeoutSeconds = 3)
-            .takeIf { it.success }?.output?.lineSequence()?.firstOrNull()
-        val pathJavaHome = resolveActiveHome(activeCommand)
+        val bashrcJavaHome = ConfigFiles.readShellJavaHome(home.resolve(".bashrc"))
+        val profileJavaHome = ConfigFiles.readShellJavaHome(home.resolve(".profile"))
+        val environmentJavaHome = ConfigFiles.readEnvironmentJavaHome(Path.of("/etc/environment"))
         val systemJavaHome = currentAlternativeHome()
-        val shellJavaHome = ConfigFiles.readShellJavaHome(home.resolve(".bashrc"))
-            ?: ConfigFiles.readShellJavaHome(home.resolve(".profile"))
 
         return EnvironmentDiagnostics.snapshot(
             operatingSystem.displayName,
             listOf(
                 aspect(
-                    EnvironmentAspectId.JAVA_HOME,
-                    "JAVA_HOME",
+                    EnvironmentAspectId.PROCESS_JAVA_HOME,
+                    "Process JAVA_HOME",
                     processJavaHome,
                     processJavaHome,
                     installations,
-                ),
-                aspect(
-                    EnvironmentAspectId.PATH_JAVA,
-                    "PATH java",
-                    activeCommand,
-                    pathJavaHome,
-                    installations,
+                    participatesInMismatch = false,
                 ),
                 aspect(
                     EnvironmentAspectId.SHELL_JAVA_HOME,
-                    "Shell JAVA_HOME",
-                    shellJavaHome,
-                    shellJavaHome,
+                    "Shell ~/.bashrc",
+                    bashrcJavaHome,
+                    bashrcJavaHome,
+                    installations,
+                ),
+                aspect(
+                    EnvironmentAspectId.LOGIN_JAVA_HOME,
+                    "Login ~/.profile",
+                    profileJavaHome,
+                    profileJavaHome,
+                    installations,
+                ),
+                aspect(
+                    EnvironmentAspectId.SYSTEM_JAVA_HOME,
+                    "System /etc/environment",
+                    environmentJavaHome,
+                    environmentJavaHome,
                     installations,
                 ),
                 aspect(
@@ -257,12 +263,14 @@ class LinuxJavaManager(
         rawValue: String?,
         resolvedHome: String?,
         installations: List<JavaInstallation>,
+        participatesInMismatch: Boolean = true,
     ): EnvironmentAspect = EnvironmentAspect(
         id = id,
         label = label,
         rawValue = rawValue,
         resolvedHome = resolvedHome,
         displayName = EnvironmentDiagnostics.displayLabel(resolvedHome, installations),
+        participatesInMismatch = participatesInMismatch,
     )
 
     private fun failedOutcomes(
