@@ -340,7 +340,9 @@ private fun EnvironmentAspectRow(aspect: EnvironmentAspect) {
             aspect.label,
             color = AppColors.TextSecondary,
             fontSize = 12.sp,
-            modifier = Modifier.width(130.dp),
+            modifier = Modifier.width(170.dp),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
         Text(
             aspect.displayName ?: aspect.resolvedHome ?: aspect.rawValue ?: "Не найдено",
