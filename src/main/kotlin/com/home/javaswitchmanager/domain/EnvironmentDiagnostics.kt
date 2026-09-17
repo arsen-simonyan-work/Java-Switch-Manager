@@ -7,16 +7,21 @@ object EnvironmentDiagnostics {
     }
 
     fun withMismatchFlags(aspects: List<EnvironmentAspect>): List<EnvironmentAspect> {
+        val comparable = aspects.filter { it.participatesInMismatch }
         return aspects.map { aspect ->
-            val key = PathNormalization.canonicalKey(aspect.resolvedHome)
-            if (key == null) {
-                aspect
+            if (!aspect.participatesInMismatch) {
+                aspect.copy(mismatched = false)
             } else {
-                val mismatched = aspects.any { other ->
-                    val otherKey = PathNormalization.canonicalKey(other.resolvedHome)
-                    otherKey != null && otherKey != key
+                val key = PathNormalization.canonicalKey(aspect.resolvedHome)
+                if (key == null) {
+                    aspect.copy(mismatched = false)
+                } else {
+                    val mismatched = comparable.any { other ->
+                        val otherKey = PathNormalization.canonicalKey(other.resolvedHome)
+                        otherKey != null && otherKey != key
+                    }
+                    aspect.copy(mismatched = mismatched)
                 }
-                aspect.copy(mismatched = mismatched)
             }
         }
     }
