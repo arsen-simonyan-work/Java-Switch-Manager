@@ -58,6 +58,8 @@ enum class EnvironmentAspectId {
     JAVA_HOME,
     PATH_JAVA,
     SHELL_JAVA_HOME,
+    LOGIN_JAVA_HOME,
+    SYSTEM_JAVA_HOME,
     SYSTEM_JAVA,
 }
 
@@ -67,6 +69,7 @@ data class EnvironmentAspect(
     val rawValue: String?,
     val resolvedHome: String?,
     val displayName: String?,
+    val participatesInMismatch: Boolean = true,
     val mismatched: Boolean = false,
 )
 
