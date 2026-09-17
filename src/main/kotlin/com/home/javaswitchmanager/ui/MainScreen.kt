@@ -163,7 +163,7 @@ fun MainScreen(controller: AppController, settings: AppSettings) {
                                         selected,
                                         activeHome = activeJavaHome(current),
                                         onSelect = { selected = it },
-                                        modifier = Modifier.weight(2f).fillMaxHeight(),
+                                        modifier = Modifier.weight(1.4f).fillMaxHeight(),
                                     )
                                     Column(
                                         modifier = Modifier.weight(1f).fillMaxHeight(),
@@ -172,7 +172,6 @@ fun MainScreen(controller: AppController, settings: AppSettings) {
                                         EnvironmentPane(current, Modifier.fillMaxWidth())
                                         OptionsPane(
                                             snapshot = current,
-                                            selected = selected,
                                             selectedTargets = selectedTargets,
                                             onTargetToggle = { id, checked ->
                                                 selectedTargets = if (checked) selectedTargets + id else selectedTargets - id
@@ -188,7 +187,6 @@ fun MainScreen(controller: AppController, settings: AppSettings) {
                                     JdkPane(current, selected, activeJavaHome(current), { selected = it }, Modifier.weight(1f).fillMaxWidth())
                                     OptionsPane(
                                         snapshot = current,
-                                        selected = selected,
                                         selectedTargets = selectedTargets,
                                         onTargetToggle = { id, checked ->
                                             selectedTargets = if (checked) selectedTargets + id else selectedTargets - id
@@ -459,7 +457,6 @@ private fun JdkPane(
 @Composable
 private fun OptionsPane(
     snapshot: AppSnapshot,
-    selected: JavaInstallation?,
     selectedTargets: Set<String>,
     onTargetToggle: (String, Boolean) -> Unit,
     modifier: Modifier,
@@ -467,15 +464,7 @@ private fun OptionsPane(
     Surface(modifier, color = AppColors.Surface, shape = RoundedCornerShape(22.dp)) {
         Column(Modifier.fillMaxSize().padding(14.dp)) {
             Text("Change", color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-            Spacer(Modifier.height(4.dp))
-            Text(
-                selected?.home?.toString() ?: "Сначала выберите JDK",
-                color = if (selected == null) AppColors.Warning else AppColors.Accent,
-                fontSize = 11.sp,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(6.dp))
             Divider(color = AppColors.Border)
             Spacer(Modifier.height(10.dp))
 
@@ -494,12 +483,6 @@ private fun OptionsPane(
                     Text("Для этой ОС нет доступных операций.", color = AppColors.Warning)
                 }
             }
-            Spacer(Modifier.height(12.dp))
-            Text(
-                "Изменения shell/JAVA_HOME действуют для новых процессов.",
-                color = AppColors.TextSecondary,
-                fontSize = 10.sp,
-            )
         }
     }
 }
