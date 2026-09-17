@@ -12,26 +12,36 @@ Run on the target operating system:
 Outputs are under `build/compose/binaries`.
 
 Configured formats:
-- Linux: `.deb`
-- Windows: `.msi`
-- macOS: `.dmg`
+- Linux x64: `.deb`
+- Windows x64: `.exe`
+- macOS Apple Silicon: `.dmg`
 
 ## macOS signing
 
 The project intentionally does not contain signing identities or notarization credentials.
-For public distribution, configure Apple Developer signing/notarization in CI before publishing the DMG.
+For public distribution, configure Apple Developer signing/notarization in CI before publishing the DMG. Unsigned builds can still be produced by GitHub Actions, but Gatekeeper may warn or block them on another Mac.
 
 ## Windows
 
-`jpackage` requires WiX for MSI creation. The GitHub Actions workflow installs WiX on the Windows runner.
+`jpackage` requires WiX for EXE installer creation. The GitHub Actions workflow installs WiX on the Windows runner. The generated EXE is unsigned unless a Windows code-signing certificate is added to CI, so SmartScreen may warn users.
 
 ## Release workflow
 
-Push a tag matching the `VERSION` value, for example:
+The workflow can be started manually with `workflow_dispatch` to verify package creation without publishing a release.
+
+To publish a GitHub Release, push a tag matching the `VERSION` value. Both `1.0.0` and `v1.0.0` tag styles are accepted for `VERSION=1.0.0`.
 
 ```bash
 git tag 1.0.0
 git push origin 1.0.0
 ```
 
-The workflow verifies the tag, runs tests and builds packages on all three operating systems before creating a GitHub release.
+For a tagged build the workflow verifies the version, runs tests, builds all three native packages, stages them with platform-specific names, uploads Actions artifacts, and then creates or updates the GitHub Release.
+
+Expected release assets for version `1.0.0`:
+
+```text
+JavaSwitchManager-1.0.0-windows-x64.exe
+JavaSwitchManager-1.0.0-linux-x64.deb
+JavaSwitchManager-1.0.0-macos-arm64.dmg
+```
