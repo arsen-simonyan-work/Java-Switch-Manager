@@ -22,7 +22,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.FloatingActionButton
@@ -49,8 +48,8 @@ import com.home.javaswitchmanager.domain.AppSnapshot
 import com.home.javaswitchmanager.domain.EnvironmentAspect
 import com.home.javaswitchmanager.domain.JavaInstallation
 import com.home.javaswitchmanager.domain.OperationOutcome
-import com.home.javaswitchmanager.domain.SwitchPlan
 import com.home.javaswitchmanager.domain.PathNormalization
+import com.home.javaswitchmanager.domain.SwitchPlan
 import com.home.javaswitchmanager.settings.AppSettings
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -110,6 +109,19 @@ fun MainScreen(controller: AppController, settings: AppSettings) {
         }
     }
 
+    fun requestApply() {
+        if (isLoading || isApplying || selectedTargets.isEmpty()) return
+        val java = selected ?: return
+        scope.launch {
+            val plan = controller.buildPlan(java, selectedTargets)
+            if (plan.operations.isEmpty()) {
+                result = ApplyResult(false, "Выберите хотя бы одну область применения.")
+            } else {
+                confirmPlan = plan
+            }
+        }
+    }
+
     LaunchedEffect(Unit) {
         try {
             val newSnapshot = controller.refresh()
@@ -150,7 +162,7 @@ fun MainScreen(controller: AppController, settings: AppSettings) {
                                         selected,
                                         activeHome = activeJavaHome(current),
                                         onSelect = { selected = it },
-                                        modifier = Modifier.weight(1.4f).fillMaxHeight(),
+                                        modifier = Modifier.weight(2f).fillMaxHeight(),
                                     )
                                     Column(
                                         modifier = Modifier.weight(1f).fillMaxHeight(),
@@ -158,25 +170,12 @@ fun MainScreen(controller: AppController, settings: AppSettings) {
                                     ) {
                                         EnvironmentPane(current, Modifier.fillMaxWidth())
                                         OptionsPane(
-                                            current,
-                                            selected,
-                                            selectedTargets,
-                                            isApplying,
+                                            snapshot = current,
+                                            selected = selected,
+                                            selectedTargets = selectedTargets,
                                             onTargetToggle = { id, checked ->
                                                 selectedTargets = if (checked) selectedTargets + id else selectedTargets - id
                                                 settings.saveSelectedTargets(controller.platformKey, selectedTargets)
-                                            },
-                                            onApply = {
-                                                selected?.let { java ->
-                                                    scope.launch {
-                                                        val plan = controller.buildPlan(java, selectedTargets)
-                                                        if (plan.operations.isEmpty()) {
-                                                            result = ApplyResult(false, "Выберите хотя бы одну область применения.")
-                                                        } else {
-                                                            confirmPlan = plan
-                                                        }
-                                                    }
-                                                }
                                             },
                                             modifier = Modifier.weight(1.2f).fillMaxWidth(),
                                         )
@@ -187,22 +186,12 @@ fun MainScreen(controller: AppController, settings: AppSettings) {
                                     EnvironmentPane(current, Modifier.fillMaxWidth())
                                     JdkPane(current, selected, activeJavaHome(current), { selected = it }, Modifier.weight(1f).fillMaxWidth())
                                     OptionsPane(
-                                        current,
-                                        selected,
-                                        selectedTargets,
-                                        isApplying,
+                                        snapshot = current,
+                                        selected = selected,
+                                        selectedTargets = selectedTargets,
                                         onTargetToggle = { id, checked ->
                                             selectedTargets = if (checked) selectedTargets + id else selectedTargets - id
                                             settings.saveSelectedTargets(controller.platformKey, selectedTargets)
-                                        },
-                                        onApply = {
-                                            selected?.let { java ->
-                                                scope.launch {
-                                                    val plan = controller.buildPlan(java, selectedTargets)
-                                                    if (plan.operations.isEmpty()) result = ApplyResult(false, "Выберите хотя бы одну область применения.")
-                                                    else confirmPlan = plan
-                                                }
-                                            }
                                         },
                                         modifier = Modifier.weight(1f).fillMaxWidth(),
                                     )
@@ -213,12 +202,22 @@ fun MainScreen(controller: AppController, settings: AppSettings) {
                 }
             }
 
-            RefreshFab(
-                loading = isLoading,
-                applying = isApplying,
-                onRefresh = ::refresh,
+            Column(
                 modifier = Modifier.align(Alignment.TopEnd).padding(top = 8.dp, end = 8.dp),
-            )
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                RefreshFab(
+                    loading = isLoading,
+                    applying = isApplying,
+                    onRefresh = ::refresh,
+                )
+                ApplyFab(
+                    enabled = selected != null && selectedTargets.isNotEmpty() && !isLoading && !isApplying,
+                    applying = isApplying,
+                    onApply = ::requestApply,
+                )
+            }
         }
     }
 
@@ -283,11 +282,35 @@ private fun RefreshFab(
 }
 
 @Composable
+private fun ApplyFab(
+    enabled: Boolean,
+    applying: Boolean,
+    onApply: () -> Unit,
+) {
+    FloatingActionButton(
+        onClick = { if (enabled) onApply() },
+        modifier = Modifier.size(48.dp),
+        backgroundColor = if (enabled || applying) AppColors.AccentStrong else AppColors.Border,
+        contentColor = Color.White,
+    ) {
+        if (applying) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(20.dp),
+                color = Color.White,
+                strokeWidth = 2.dp,
+            )
+        } else {
+            Text("✓", fontSize = 22.sp, fontWeight = FontWeight.Bold)
+        }
+    }
+}
+
+@Composable
 private fun EnvironmentPane(snapshot: AppSnapshot, modifier: Modifier) {
     Surface(modifier, color = AppColors.Surface, shape = RoundedCornerShape(22.dp)) {
         Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Current environment", color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 17.sp)
+                Text("Current environment", color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 if (snapshot.environment.hasMismatch) {
                     Spacer(Modifier.width(6.dp))
                     Text("⚠ mismatch", color = AppColors.Warning, fontSize = 11.sp)
@@ -402,7 +425,7 @@ private fun JdkPane(
     Surface(modifier, color = AppColors.Surface, shape = RoundedCornerShape(22.dp)) {
         Column(Modifier.fillMaxSize().padding(14.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Installed JDKs", color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 19.sp)
+                Text("Installed JDKs", color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 Spacer(Modifier.width(8.dp))
                 Text("${snapshot.installations.size}", color = AppColors.TextSecondary, fontSize = 12.sp)
             }
@@ -437,14 +460,12 @@ private fun OptionsPane(
     snapshot: AppSnapshot,
     selected: JavaInstallation?,
     selectedTargets: Set<String>,
-    applying: Boolean,
     onTargetToggle: (String, Boolean) -> Unit,
-    onApply: () -> Unit,
     modifier: Modifier,
 ) {
     Surface(modifier, color = AppColors.Surface, shape = RoundedCornerShape(22.dp)) {
         Column(Modifier.fillMaxSize().padding(14.dp)) {
-            Text("Change", color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 19.sp)
+            Text("Change", color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 16.sp)
             Spacer(Modifier.height(4.dp))
             Text(
                 selected?.home?.toString() ?: "Сначала выберите JDK",
@@ -478,16 +499,6 @@ private fun OptionsPane(
                 color = AppColors.TextSecondary,
                 fontSize = 10.sp,
             )
-            Spacer(Modifier.height(8.dp))
-            Button(
-                onClick = onApply,
-                enabled = selected != null && selectedTargets.isNotEmpty() && !applying,
-                modifier = Modifier.fillMaxWidth().height(46.dp),
-                shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.buttonColors(backgroundColor = AppColors.AccentStrong, contentColor = Color.White),
-            ) {
-                Text(if (applying) "Применение..." else "Apply", fontWeight = FontWeight.Bold)
-            }
         }
     }
 }
