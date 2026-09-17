@@ -15,11 +15,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             artifact: linux-x64-deb
             extension: deb
             suffix: linux-x64
-          - os: windows-latest
+          - os: windows-2025
             artifact: windows-x64-exe
             extension: exe
             suffix: windows-x64
@@ -46,10 +46,12 @@ jobs:
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y fakeroot
 
-      - name: Install WiX
+      - name: Verify WiX
         if: runner.os == 'Windows'
         shell: powershell
-        run: choco install wixtoolset --no-progress -y
+        run: |
+          Get-Command candle.exe -ErrorAction Stop
+          Get-Command light.exe -ErrorAction Stop
 
       - name: Read application version
         shell: bash
@@ -88,7 +90,7 @@ jobs:
   release:
     if: github.event_name == 'push'
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Download packaged artifacts
@@ -100,6 +102,7 @@ jobs:
       - name: Publish GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
         shell: bash
         run: |
           if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
