@@ -12,16 +12,27 @@ import com.home.javaswitchmanager.settings.AppSettings
 import com.home.javaswitchmanager.ui.JavaSwitchTheme
 import com.home.javaswitchmanager.ui.MainScreen
 
+private fun appVersion(): String? =
+    Thread.currentThread().contextClassLoader
+        .getResourceAsStream("app-version.txt")
+        ?.bufferedReader()
+        ?.use { it.readText().trim() }
+        ?.takeIf { it.isNotBlank() }
+
 fun main() = application {
     val manager = remember { PlatformJavaManagerFactory.create() }
     val controller = remember { AppController(manager) }
     val settings = remember { AppSettings() }
     val icon = painterResource("icons/app-icon.png")
     val state = rememberWindowState(size = DpSize(1100.dp, 760.dp))
+    val version = remember { appVersion() }
+    val windowTitle = remember(version) {
+        if (version == null) "Java Switch Manager" else "Java Switch Manager $version"
+    }
 
     Window(
         onCloseRequest = ::exitApplication,
-        title = "Java Switch Manager",
+        title = windowTitle,
         state = state,
         icon = icon,
     ) {
