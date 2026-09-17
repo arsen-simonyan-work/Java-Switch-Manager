@@ -158,7 +158,7 @@ fun MainScreen(controller: AppController, settings: AppSettings) {
                                     modifier = Modifier.weight(1f).fillMaxHeight(),
                                     verticalArrangement = Arrangement.spacedBy(14.dp),
                                 ) {
-                                    EnvironmentPane(current, Modifier.weight(0.9f).fillMaxWidth())
+                                    EnvironmentPane(current, Modifier.fillMaxWidth())
                                     OptionsPane(
                                         current,
                                         selected,
@@ -276,18 +276,18 @@ private fun RefreshFab(loading: Boolean, applying: Boolean, onRefresh: () -> Uni
 @Composable
 private fun EnvironmentPane(snapshot: AppSnapshot, modifier: Modifier) {
     Surface(modifier, color = AppColors.Surface, shape = RoundedCornerShape(22.dp)) {
-        Column(Modifier.fillMaxSize().padding(14.dp)) {
+        Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("Current environment", color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 17.sp)
                 if (snapshot.environment.hasMismatch) {
-                    Spacer(Modifier.width(8.dp))
+                    Spacer(Modifier.width(6.dp))
                     Text("⚠ mismatch", color = AppColors.Warning, fontSize = 11.sp)
                 }
             }
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(4.dp))
             Divider(color = AppColors.Border)
-            Spacer(Modifier.height(8.dp))
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Spacer(Modifier.height(4.dp))
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 snapshot.environment.aspects.forEach { aspect ->
                     EnvironmentAspectRow(aspect)
                 }
