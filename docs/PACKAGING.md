@@ -23,7 +23,16 @@ For public distribution, configure Apple Developer signing/notarization in CI be
 
 ## Windows
 
-`jpackage` requires WiX for EXE installer creation. The GitHub Actions workflow installs WiX on the Windows runner. The generated EXE is unsigned unless a Windows code-signing certificate is added to CI, so SmartScreen may warn users.
+`jpackage` requires WiX for EXE installer creation. The pinned `windows-2025` GitHub runner already includes WiX Toolset 3.14, and the workflow verifies that `candle.exe` and `light.exe` are available before packaging. The generated EXE is unsigned unless a Windows code-signing certificate is added to CI, so SmartScreen may warn users.
+
+## GitHub Actions runners
+
+Release packaging is pinned to:
+- `ubuntu-24.04` for the Linux x64 DEB
+- `windows-2025` for the Windows x64 EXE
+- `macos-15` for the Apple Silicon DMG
+
+All jobs use JDK 21 and the repository Gradle wrapper.
 
 ## Release workflow
 
