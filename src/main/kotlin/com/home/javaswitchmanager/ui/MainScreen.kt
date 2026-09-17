@@ -95,6 +95,7 @@ fun MainScreen(controller: AppController, settings: AppSettings) {
             operationMutex.withLock {
                 isLoading = true
                 error = null
+                result = null
                 try {
                     val newSnapshot = controller.refresh()
                     val previous = selected
@@ -136,14 +137,14 @@ fun MainScreen(controller: AppController, settings: AppSettings) {
 
     Surface(color = AppColors.Background, modifier = Modifier.fillMaxSize()) {
         Box(Modifier.fillMaxSize()) {
-            Column(Modifier.fillMaxSize().padding(18.dp)) {
+            Column(Modifier.fillMaxSize().padding(8.dp)) {
                 if (error != null) {
                     StatusBanner(error!!, AppColors.Error)
-                    Spacer(Modifier.height(10.dp))
+                    Spacer(Modifier.height(8.dp))
                 }
                 if (result != null) {
                     ApplyResultBanner(result!!)
-                    Spacer(Modifier.height(10.dp))
+                    Spacer(Modifier.height(8.dp))
                 }
 
                 if (isLoading && snapshot == null) {
@@ -156,7 +157,7 @@ fun MainScreen(controller: AppController, settings: AppSettings) {
                         BoxWithConstraints(Modifier.fillMaxSize()) {
                             val wide = maxWidth >= 900.dp
                             if (wide) {
-                                Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                                Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                     JdkPane(
                                         current,
                                         selected,
@@ -166,7 +167,7 @@ fun MainScreen(controller: AppController, settings: AppSettings) {
                                     )
                                     Column(
                                         modifier = Modifier.weight(1f).fillMaxHeight(),
-                                        verticalArrangement = Arrangement.spacedBy(14.dp),
+                                        verticalArrangement = Arrangement.spacedBy(8.dp),
                                     ) {
                                         EnvironmentPane(current, Modifier.fillMaxWidth())
                                         OptionsPane(
@@ -182,7 +183,7 @@ fun MainScreen(controller: AppController, settings: AppSettings) {
                                     }
                                 }
                             } else {
-                                Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                                Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                     EnvironmentPane(current, Modifier.fillMaxWidth())
                                     JdkPane(current, selected, activeJavaHome(current), { selected = it }, Modifier.weight(1f).fillMaxWidth())
                                     OptionsPane(
@@ -203,7 +204,7 @@ fun MainScreen(controller: AppController, settings: AppSettings) {
             }
 
             Column(
-                modifier = Modifier.align(Alignment.TopEnd).padding(top = 8.dp, end = 8.dp),
+                modifier = Modifier.align(Alignment.TopEnd).padding(top = 6.dp, end = 6.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
