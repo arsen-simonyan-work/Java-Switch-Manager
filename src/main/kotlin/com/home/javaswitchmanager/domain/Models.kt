@@ -2,13 +2,16 @@ package com.home.javaswitchmanager.domain
 
 import java.nio.file.Path
 
-enum class JavaInstallationSource(val label: String) {
+enum class JavaInstallationSource(
+    val label: String,
+    val systemRegistered: Boolean = false,
+) {
     JAVA_HOME("JAVA_HOME"),
-    UPDATE_ALTERNATIVES("update-alternatives"),
+    UPDATE_ALTERNATIVES("update-alternatives", systemRegistered = true),
     PATH("PATH"),
     FILE_SCAN("File scan"),
-    REGISTRY("Registry"),
-    JAVA_HOME_TOOL("java_home"),
+    REGISTRY("Registry", systemRegistered = true),
+    JAVA_HOME_TOOL("java_home", systemRegistered = true),
     SDKMAN("SDKMAN"),
     JENV("jEnv"),
     HOME_BREW("Homebrew"),
