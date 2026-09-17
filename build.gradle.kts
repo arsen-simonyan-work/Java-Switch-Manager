@@ -35,7 +35,7 @@ compose.desktop {
         mainClass = "com.home.javaswitchmanager.MainKt"
 
         nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+            targetFormats(TargetFormat.Dmg, TargetFormat.Exe, TargetFormat.Deb)
             packageName = "JavaSwitchManager"
             packageVersion = project.version.toString()
             description = "Cross-platform JDK discovery and Java environment switcher"
