@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -24,7 +25,7 @@ import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
-import androidx.compose.material.OutlinedButton
+import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
@@ -53,7 +54,6 @@ import com.home.javaswitchmanager.domain.PathNormalization
 import com.home.javaswitchmanager.settings.AppSettings
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.sync.withLock
 
 @Composable
@@ -124,8 +124,8 @@ fun MainScreen(controller: AppController, settings: AppSettings) {
 
     Surface(color = AppColors.Background, modifier = Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize().padding(18.dp)) {
-            Header(snapshot, isLoading, isApplying, onRefresh = ::refresh)
-            Spacer(Modifier.height(14.dp))
+            RefreshFab(isLoading, isApplying, onRefresh = ::refresh)
+            Spacer(Modifier.height(10.dp))
 
             if (error != null) {
                 StatusBanner(error!!, AppColors.Error)
@@ -160,28 +160,28 @@ fun MainScreen(controller: AppController, settings: AppSettings) {
                                 ) {
                                     EnvironmentPane(current, Modifier.weight(0.9f).fillMaxWidth())
                                     OptionsPane(
-                                    current,
-                                    selected,
-                                    selectedTargets,
-                                    isApplying,
-                                    onTargetToggle = { id, checked ->
-                                        selectedTargets = if (checked) selectedTargets + id else selectedTargets - id
-                                        settings.saveSelectedTargets(controller.platformKey, selectedTargets)
-                                    },
-                                    onApply = {
-                                        selected?.let { java ->
-                                            scope.launch {
-                                                val plan = controller.buildPlan(java, selectedTargets)
-                                                if (plan.operations.isEmpty()) {
-                                                    result = ApplyResult(false, "Выберите хотя бы одну область применения.")
-                                                } else {
-                                                    confirmPlan = plan
+                                        current,
+                                        selected,
+                                        selectedTargets,
+                                        isApplying,
+                                        onTargetToggle = { id, checked ->
+                                            selectedTargets = if (checked) selectedTargets + id else selectedTargets - id
+                                            settings.saveSelectedTargets(controller.platformKey, selectedTargets)
+                                        },
+                                        onApply = {
+                                            selected?.let { java ->
+                                                scope.launch {
+                                                    val plan = controller.buildPlan(java, selectedTargets)
+                                                    if (plan.operations.isEmpty()) {
+                                                        result = ApplyResult(false, "Выберите хотя бы одну область применения.")
+                                                    } else {
+                                                        confirmPlan = plan
+                                                    }
                                                 }
                                             }
-                                        }
-                                    },
-                                    modifier = Modifier.weight(1.2f).fillMaxWidth(),
-                                )
+                                        },
+                                        modifier = Modifier.weight(1.2f).fillMaxWidth(),
+                                    )
                                 }
                             }
                         } else {
@@ -251,26 +251,24 @@ fun MainScreen(controller: AppController, settings: AppSettings) {
 }
 
 @Composable
-private fun Header(snapshot: AppSnapshot?, loading: Boolean, applying: Boolean, onRefresh: () -> Unit) {
-    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Column(Modifier.weight(1f)) {
-            Text("Java Switch Manager", color = AppColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 25.sp)
-            val env = snapshot?.environment
-            Text(
-                if (env == null) "Поиск Java..." else env.platformName,
-                color = AppColors.TextSecondary,
-                fontSize = 12.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
-        OutlinedButton(
-            onClick = onRefresh,
-            enabled = !loading && !applying,
-            border = BorderStroke(1.dp, AppColors.Border),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = AppColors.TextPrimary),
+private fun RefreshFab(loading: Boolean, applying: Boolean, onRefresh: () -> Unit) {
+    val enabled = !loading && !applying
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+        FloatingActionButton(
+            onClick = { if (enabled) onRefresh() },
+            modifier = Modifier.size(48.dp),
+            backgroundColor = if (enabled) AppColors.AccentStrong else AppColors.Border,
+            contentColor = Color.White,
         ) {
-            Text(if (loading) "Обновление..." else "Обновить")
+            if (loading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    color = Color.White,
+                    strokeWidth = 2.dp,
+                )
+            } else {
+                Text("↻", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+            }
         }
     }
 }
