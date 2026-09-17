@@ -406,9 +406,9 @@ private fun JdkPane(
                 }
             } else {
                 LazyVerticalGrid(
-                    columns = GridCells.Adaptive(220.dp),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    columns = GridCells.Adaptive(190.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.fillMaxSize(),
                 ) {
                     items(snapshot.installations, key = { it.home.toString() }) { installation ->
