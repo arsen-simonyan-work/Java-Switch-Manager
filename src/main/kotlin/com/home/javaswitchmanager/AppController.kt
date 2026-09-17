@@ -15,8 +15,11 @@ class AppController(
         get() = manager.operatingSystem.name.lowercase()
 
     suspend fun refresh(): AppSnapshot = withContext(Dispatchers.IO) {
+        val installations = manager.discoverInstallations()
+            .filter { it.source.systemRegistered }
+
         AppSnapshot(
-            installations = manager.discoverInstallations(),
+            installations = installations,
             environment = manager.readEnvironment(),
             targets = manager.readTargets(),
         )
