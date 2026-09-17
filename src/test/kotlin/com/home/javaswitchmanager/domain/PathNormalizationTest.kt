@@ -31,11 +31,35 @@ class EnvironmentDiagnosticsTest {
     @Test
     fun marksMismatchWhenHomesDiffer() {
         val aspects = listOf(
-            EnvironmentAspect(EnvironmentAspectId.JAVA_HOME, "JAVA_HOME", "/a", "/a", "21", false),
-            EnvironmentAspect(EnvironmentAspectId.PATH_JAVA, "PATH java", "/b/bin/java", "/b", "17", false),
+            EnvironmentAspect(EnvironmentAspectId.JAVA_HOME, "JAVA_HOME", "/a", "/a", "21"),
+            EnvironmentAspect(EnvironmentAspectId.PATH_JAVA, "PATH java", "/b/bin/java", "/b", "17"),
         )
+
         val snapshot = EnvironmentDiagnostics.snapshot("Linux", aspects)
+
         assertTrue(snapshot.hasMismatch)
+        assertTrue(snapshot.aspects.single { it.label == "JAVA_HOME" }.mismatched)
         assertTrue(snapshot.aspects.single { it.label == "PATH java" }.mismatched)
+    }
+
+    @Test
+    fun ignoresNonParticipatingProcessJavaHome() {
+        val aspects = listOf(
+            EnvironmentAspect(
+                EnvironmentAspectId.PROCESS_JAVA_HOME,
+                "Process JAVA_HOME",
+                "/old",
+                "/old",
+                "17",
+                participatesInMismatch = false,
+            ),
+            EnvironmentAspect(EnvironmentAspectId.SHELL_JAVA_HOME, "Shell ~/.bashrc", "/new", "/new", "15"),
+            EnvironmentAspect(EnvironmentAspectId.SYSTEM_JAVA, "System Java", "/new", "/new", "15"),
+        )
+
+        val snapshot = EnvironmentDiagnostics.snapshot("Linux", aspects)
+
+        assertFalse(snapshot.hasMismatch)
+        assertFalse(snapshot.aspects.single { it.label == "Process JAVA_HOME" }.mismatched)
     }
 }
