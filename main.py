@@ -27,9 +27,9 @@ TEXT_SECONDARY = "#95a4b8"
 SUCCESS = "#6fd08c"
 ERROR = "#ff7d7d"
 WARNING = "#f1c36a"
-CARD_WIDTH = 189
-CARD_PAD_X = 6
-CARD_PAD_Y = 6
+CARD_WIDTH = 180
+CARD_PAD_X = 5
+CARD_PAD_Y = 4
 
 
 ctk.set_appearance_mode("dark")
@@ -379,8 +379,8 @@ class JavaCard(ctk.CTkFrame):
         super().__init__(
             master,
             width=CARD_WIDTH,
-            height=114,
-            corner_radius=18,
+            height=88,
+            corner_radius=16,
             fg_color=CARD_BG,
             border_width=1,
             border_color=BORDER,
@@ -390,36 +390,28 @@ class JavaCard(ctk.CTkFrame):
         self.on_select = on_select
         self.is_selected = False
         title, subtitle, address = parse_java_display(java_home)
+        display_title = f"{title} {subtitle}".strip()
 
         self.indicator = ctk.CTkLabel(
             self,
             text="",
-            width=24,
-            height=24,
-            corner_radius=12,
+            width=20,
+            height=20,
+            corner_radius=10,
             fg_color=SURFACE_ALT,
             text_color=TEXT_PRIMARY,
-            font=("Arial", 13, "bold"),
+            font=("Arial", 12, "bold"),
         )
-        self.indicator.grid(row=0, column=1, padx=(6, 10), pady=(10, 0), sticky="ne")
+        self.indicator.grid(row=0, column=1, padx=(4, 8), pady=(7, 0), sticky="ne")
 
         self.title_label = ctk.CTkLabel(
             self,
-            text=title,
-            font=("Arial", 14),
+            text=display_title,
+            font=("Arial", 13, "bold"),
             text_color=TEXT_PRIMARY,
             anchor="w",
         )
-        self.title_label.grid(row=0, column=0, padx=(10, 6), pady=(10, 2), sticky="nw")
-
-        self.subtitle_label = ctk.CTkLabel(
-            self,
-            text=subtitle or " ",
-            font=("Arial", 12, "bold"),
-            text_color=TEXT_PRIMARY,
-            anchor="w",
-        )
-        self.subtitle_label.grid(row=1, column=0, columnspan=2, padx=10, pady=(0, 2), sticky="nw")
+        self.title_label.grid(row=0, column=0, padx=(8, 4), pady=(7, 0), sticky="nw")
 
         self.path_label = ctk.CTkLabel(
             self,
@@ -428,15 +420,14 @@ class JavaCard(ctk.CTkFrame):
             text_color=TEXT_SECONDARY,
             justify="left",
             anchor="w",
-            wraplength=135,
+            wraplength=150,
         )
-        self.path_label.grid(row=2, column=0, columnspan=2, padx=10, pady=(0, 8), sticky="nsew")
+        self.path_label.grid(row=1, column=0, columnspan=2, padx=8, pady=(0, 5), sticky="nsew")
 
         self.columnconfigure(0, weight=1)
         self.bind_click(self)
         self.bind_click(self.indicator)
         self.bind_click(self.title_label)
-        self.bind_click(self.subtitle_label)
         self.bind_click(self.path_label)
 
         self.bind("<Enter>", self.on_enter)
@@ -445,8 +436,6 @@ class JavaCard(ctk.CTkFrame):
         self.indicator.bind("<Leave>", self.on_leave)
         self.title_label.bind("<Enter>", self.on_enter)
         self.title_label.bind("<Leave>", self.on_leave)
-        self.subtitle_label.bind("<Enter>", self.on_enter)
-        self.subtitle_label.bind("<Leave>", self.on_leave)
         self.path_label.bind("<Enter>", self.on_enter)
         self.path_label.bind("<Leave>", self.on_leave)
 
@@ -466,12 +455,10 @@ class JavaCard(ctk.CTkFrame):
         if is_selected:
             self.configure(fg_color=CARD_ACTIVE, border_color=BORDER_ACTIVE)
             self.indicator.configure(text="✓", fg_color=BORDER_ACTIVE, text_color=APP_BG)
-            self.subtitle_label.configure(text_color=TEXT_PRIMARY)
             self.path_label.configure(text_color="#d7ebff")
         else:
             self.configure(fg_color=CARD_BG, border_color=BORDER)
             self.indicator.configure(text="", fg_color=SURFACE_ALT, text_color=TEXT_PRIMARY)
-            self.subtitle_label.configure(text_color=TEXT_PRIMARY)
             self.path_label.configure(text_color=TEXT_SECONDARY)
 
 
@@ -564,7 +551,6 @@ def build_version_cards():
         bind_versions_mousewheel(card)
         bind_versions_mousewheel(card.indicator)
         bind_versions_mousewheel(card.title_label)
-        bind_versions_mousewheel(card.subtitle_label)
         bind_versions_mousewheel(card.path_label)
         version_cards.append(card)
 
