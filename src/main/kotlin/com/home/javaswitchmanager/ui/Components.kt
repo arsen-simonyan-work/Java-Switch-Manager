@@ -126,8 +126,20 @@ fun TargetRow(
             )
             Spacer(Modifier.width(6.dp))
             Column(Modifier.weight(1f)) {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Text(target.title, color = AppColors.TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        target.title,
+                        color = AppColors.TextPrimary,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 14.sp,
+                        modifier = Modifier.weight(1f),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
                     if (target.requiresElevation) {
                         Surface(color = Color(0xFF4B3B1D), shape = RoundedCornerShape(8.dp)) {
                             Text("ADMIN", color = AppColors.Warning, fontSize = 9.sp, modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp))
@@ -135,13 +147,19 @@ fun TargetRow(
                     }
                 }
                 Spacer(Modifier.height(3.dp))
-                Text(target.description, color = AppColors.TextSecondary, fontSize = 11.sp)
+                Text(
+                    target.description,
+                    color = AppColors.TextSecondary,
+                    fontSize = 11.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
                 Spacer(Modifier.height(4.dp))
                 Text(
                     target.currentValue ?: "Не настроено",
                     color = if (target.currentValue == null) AppColors.Warning else AppColors.Success,
                     fontSize = 10.sp,
-                    maxLines = 2,
+                    maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
             }
