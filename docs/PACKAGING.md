@@ -25,9 +25,10 @@ entry in `/usr/share/applications`, PNG icons in the hicolor theme, and AppStrea
 metadata in `/usr/share/metainfo`. Installation and removal refresh desktop and
 icon caches when the corresponding utilities are available. Local DEB previews
 may still use a generic package icon, depending on the Ubuntu installer version.
-`generateAppIcons` creates the small PNGs using progressive downsampling. Both
-the window and the Linux icon theme use these same images, avoiding a single
-large icon being reduced independently by the JVM and the desktop shell.
+`generateAppIcons` creates window icons using progressive downsampling. The Linux
+icon theme installs only the 512×512 PNG, matching STB Update Verifier's packaging,
+so the desktop scales the large image to its menu and Dock sizes. Smaller PNGs
+are embedded only in the application for AWT window icons.
 
 ## macOS signing
 

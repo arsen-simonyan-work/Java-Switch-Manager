@@ -145,12 +145,12 @@ tasks.withType<AbstractJPackageTask>().configureEach {
             val installedMetadata = unpacked.resolve("usr/share/metainfo/${linuxMetadata.asFile.name}")
             installedMetadata.parentFile.mkdirs()
             linuxMetadata.asFile.copyTo(installedMetadata, overwrite = true)
-            for (size in listOf(16, 24, 32, 48, 64, 96, 128, 256, 512)) {
-                val sourceIcon = layout.buildDirectory.file("generated/app-icons/icons/sizes/app-icon-$size.png").get().asFile
-                val iconFile = unpacked.resolve("usr/share/icons/hicolor/${size}x${size}/apps/$iconName.png")
-                iconFile.parentFile.mkdirs()
-                sourceIcon.copyTo(iconFile, overwrite = true)
-            }
+            // Match STB Update Verifier: let the desktop scale one large theme icon.
+            // The smaller generated images remain available to AWT inside the app.
+            val themeIcon = layout.buildDirectory.file("generated/app-icons/icons/sizes/app-icon-512.png").get().asFile
+            val iconFile = unpacked.resolve("usr/share/icons/hicolor/512x512/apps/$iconName.png")
+            iconFile.parentFile.mkdirs()
+            themeIcon.copyTo(iconFile, overwrite = true)
             val refreshDesktopCaches = """
                 if command -v gtk-update-icon-cache >/dev/null 2>&1; then
                     gtk-update-icon-cache -q -t -f /usr/share/icons/hicolor || true
