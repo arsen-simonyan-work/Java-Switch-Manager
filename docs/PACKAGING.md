@@ -19,6 +19,15 @@ Configured formats:
 The Linux DEB desktop entry uses `Name=Java Switch Manager` and
 `StartupWMClass=JavaSwitchManager`. The DEB packaging tasks update these fields
 after jpackage generates the package, including release builds.
+The `JavaSwitchManager` launcher initializes AWT before Compose so the actual
+X11 window class matches the desktop entry. The package also includes the desktop
+entry in `/usr/share/applications`, PNG icons in the hicolor theme, and AppStream
+metadata in `/usr/share/metainfo`. Installation and removal refresh desktop and
+icon caches when the corresponding utilities are available. Local DEB previews
+may still use a generic package icon, depending on the Ubuntu installer version.
+`generateAppIcons` creates the small PNGs using progressive downsampling. Both
+the window and the Linux icon theme use these same images, avoiding a single
+large icon being reduced independently by the JVM and the desktop shell.
 
 ## macOS signing
 

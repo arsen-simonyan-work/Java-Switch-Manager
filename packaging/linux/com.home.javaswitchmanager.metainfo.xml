@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.home.javaswitchmanager</id>
+  <pkgname>java-switch-manager</pkgname>
+  <metadata_license>CC0-1.0</metadata_license>
+  <url type="homepage">https://github.com/arsen-simonyan-work/Java-Switch-Manager</url>
+  <name>Java Switch Manager</name>
+  <summary>Discover installed JDKs and switch your Java environment</summary>
+  <description>
+    <p>Java Switch Manager helps you find installed Java Development Kits,
+    inspect your Java environment and switch between JDK versions.</p>
+  </description>
+  <launchable type="desktop-id">java-switch-manager-JavaSwitchManager.desktop</launchable>
+  <icon type="stock">com.home.javaswitchmanager</icon>
+  <categories>
+    <category>Development</category>
+    <category>Utility</category>
+  </categories>
+</component>
