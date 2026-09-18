@@ -1,4 +1,5 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.jetbrains.compose.desktop.application.tasks.AbstractJPackageTask
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -65,6 +66,35 @@ compose.desktop {
                 menuGroup = "Development"
                 appCategory = "Development"
             }
+        }
+    }
+}
+
+// Compose owns jpackage's resource directory, so update the generated DEB desktop entry.
+tasks.withType<AbstractJPackageTask>().configureEach {
+    if (targetFormat == TargetFormat.Deb) {
+        val displayName = "Java Switch Manager"
+        val windowClass = "JavaSwitchManager"
+        inputs.property("desktopDisplayName", displayName)
+        inputs.property("desktopWindowClass", windowClass)
+        doLast {
+            val deb = destinationDir.get().asFile.listFiles().orEmpty().single { it.extension == "deb" }
+            val unpacked = temporaryDir.resolve("desktop-entry")
+            unpacked.deleteRecursively()
+            providers.exec {
+                commandLine("dpkg-deb", "--raw-extract", deb.absolutePath, unpacked.absolutePath)
+            }.result.get().assertNormalExitValue()
+            val desktop = unpacked.walkTopDown().single { it.isFile && it.extension == "desktop" }
+            desktop.writeText(
+                desktop.readLines()
+                    .filterNot { it.startsWith("StartupWMClass=") }
+                    .joinToString("\n") { if (it.startsWith("Name=")) "Name=$displayName" else it }
+                    .trimEnd() + "\nStartupWMClass=$windowClass\n"
+            )
+            providers.exec {
+                commandLine("dpkg-deb", "--build", "--root-owner-group", unpacked.absolutePath, deb.absolutePath)
+            }.result.get().assertNormalExitValue()
+            unpacked.deleteRecursively()
         }
     }
 }

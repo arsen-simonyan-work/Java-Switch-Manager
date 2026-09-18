@@ -16,6 +16,10 @@ Configured formats:
 - Windows x64: `.exe`
 - macOS Apple Silicon: `.dmg`
 
+The Linux DEB desktop entry uses `Name=Java Switch Manager` and
+`StartupWMClass=JavaSwitchManager`. The DEB packaging tasks update these fields
+after jpackage generates the package, including release builds.
+
 ## macOS signing
 
 The project intentionally does not contain signing identities or notarization credentials.
